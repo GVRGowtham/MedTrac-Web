@@ -38,14 +38,14 @@
 			}
 			else {
 				alert("Redirecting to login page");
-				window.location.href = 'home.html';
+				window.location.href = 'index.html';
 			}
 		});
 		function call(){
 			firebase.auth().signOut().then(function() {
 				// Sign-out successful.
 				alert("Signed out successfully");
-				window.location.href = 'home.html';
+				window.location.href = 'index.html';
 			}).catch(function(error) {
 				// An error happened.
 				var errorCode = error.code;
@@ -119,7 +119,7 @@
 				<a class="navbar-brand" href="#"><span class="glyphicon glyphicon-home"></span><strong> MedTrac</strong></a>
 			</div>
 			<ul class="nav navbar-nav">
-				<li><a href="order.html">Home</a></li>
+				<li><a href="order_pharma.html">Home</a></li>
 				<li class="active"><a href="#">Returns</a></li>
 			</ul>
 			<div class="collapse navbar-collapse" id="myNavbar">
@@ -144,7 +144,7 @@
 						<div class="col-xs-6 col-md-4 col-md-offset-2">
                         	<div class="form-top">
                         		<div class="form-top-left">
-                        			<h3><strong>Your Orders</strong></h3>
+                        			<h3><strong>Returns</strong></h3>
                         		</div>
                             </div>
                             <div class="form-bottom" id="disease">

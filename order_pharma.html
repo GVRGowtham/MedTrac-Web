@@ -38,14 +38,14 @@
 			}
 			else {
 				alert("Redirecting to login page");
-				window.location.href = 'home.html';
+				window.location.href = 'index.html';
 			}
 		});
 		function call(){
 			firebase.auth().signOut().then(function() {
 				// Sign-out successful.
 				alert("Signed out successfully");
-				window.location.href = 'home.html';
+				window.location.href = 'index.html';
 			}).catch(function(error) {
 				// An error happened.
 				var errorCode = error.code;
@@ -121,7 +121,7 @@
 			<div class="collapse navbar-collapse" id="myNavbar">
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="#">Home</a></li>
-					<li><a href="return.html">Returns</a></li>
+					<li><a href="return_pharma.html">Returns</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li><a href="#"><span class="glyphicon glyphicon-user"></span><strong> Change Password</strong></a></li>

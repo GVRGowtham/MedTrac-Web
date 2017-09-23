@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MedTrac</title>
+	<script src="https://www.gstatic.com/firebasejs/4.4.0/firebase.js"></script>
+	<script>
+	// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyAP26EmwsmoA1Z9pUGv-IW6JB6b1Q0gKWM",
+			authDomain: "medtrac-71301.firebaseapp.com",
+			databaseURL: "https://medtrac-71301.firebaseio.com",
+			projectId: "medtrac-71301",
+			storageBucket: "medtrac-71301.appspot.com",
+			messagingSenderId: "825567079349"
+		};
+		firebase.initializeApp(config);
+		var database = firebase.database();
+		var user=firebase.auth().currentUser;
+		var welcome="Welcome ";
+		var append="<ul class=\"list-group\">";
+		var uid="";
+		firebase.auth().onAuthStateChanged(function(user) {
+			if (user) {
+				uid=user.uid;
+				var ref=database.ref('pharmacists/'+user.uid+'/name');
+				ref.once('value').then( function(snapshot) {
+					welcome=welcome+snapshot.val();
+					document.getElementById("fixedbutton").innerHTML = welcome;
+				});
+				var ref=database.ref('return/');
+				ref.once('value').then( function(snapshot) {
+					snapshot.forEach(function(childSnapshot) {
+						append=append+"<li class=\"list-group-item\" onclick=show('"+childSnapshot.key+"') id=\""+childSnapshot.key+"\">"+childSnapshot.child('name').val()+" - "+childSnapshot.child('email').val()+"<span class=\"badge\">"+childSnapshot.child('count').val()+"</span></li>";
+					});
+					append=append+"</ul>";
+					document.getElementById("disease").innerHTML = append;
+				});
+			}
+			else {
+				alert("Redirecting to login page");
+				window.location.href = 'home.html';
+			}
+		});
+		function call(){
+			firebase.auth().signOut().then(function() {
+				// Sign-out successful.
+				alert("Signed out successfully");
+				window.location.href = 'home.html';
+			}).catch(function(error) {
+				// An error happened.
+				var errorCode = error.code;
+				var errorMessage = error.message;
+				alert(errorMessage);
+			});
+		}
+		function show(id){
+			var content="";
+			var ref=database.ref('return/'+id+"/medicine");
+			ref.once('value').then( function(snapshot) {
+					snapshot.forEach(function(childSnapshot) {
+						content=content+"<li class=\"list-group-item\">"+childSnapshot.key+"<span class=\"badge\">"+childSnapshot.val()+"</span></li>";
+					});
+				document.getElementById("category-list").innerHTML=content;
+				var el=document.getElementById(id);
+				var elements = document.getElementsByClassName('active');
+				[].forEach.call(elements, function(e) {
+					e.classList.remove("active");
+				});
+				el.classList.add('active');
+			});
+		}
+	</script>
+	
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>MedTrac Login</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:400,100,300,500">
+        <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.css">
+        <link rel="stylesheet" href="assets/font-awesome/css/font-awesome.min.css">
+		<link rel="stylesheet" href="assets/css/form-elements.css">
+        <link rel="stylesheet" href="assets/css/style.css">
+        <link rel="stylesheet" href="assets/css/animate.css">
+	</head>
+	<style>
+	font,footer{
+		color:black;
+	}
+	#disease{
+		color:white;
+		font-weight:bold;
+		font-size:18px;
+	}
+	#fixedbutton {
+		position: fixed;
+		bottom: 50%;
+		left: 0px; 
+		color:black;
+		font-size:14px;
+	}
+	.list-group{
+		background: rgba(0,0,0,0);
+		color:black;
+	}
+	</style>
+	</head>
+	<body onload="run()">
+	<button class="btn btn-link-1 btn-link-1-welcome" id="fixedbutton"></button>
+	 <nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#"><span class="glyphicon glyphicon-home"></span><strong> MedTrac</strong></a>
+			</div>
+			<ul class="nav navbar-nav">
+				<li><a href="order.html">Home</a></li>
+				<li class="active"><a href="#">Returns</a></li>
+			</ul>
+			<div class="collapse navbar-collapse" id="myNavbar">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#"><span class="glyphicon glyphicon-user"></span><strong> Change Password</strong></a></li>
+					<li onclick="call()"><a href="#"><span class="glyphicon glyphicon-log-in"></span><strong> Sign-out</strong></a></li>
+				</ul>
+			</div>
+		</div>
+	</nav> 
+	<!-- Top content -->
+        <div class="top-content">
+            <div class="inner-bg">
+			<div class="container">
+                    <div class="row">
+                        <div class="col-sm-8 col-sm-offset-2 text">
+                            <h1><strong>Welcome to <font>MedTrac</strong></font></h1><br/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+						<div class="col-xs-6 col-md-4 col-md-offset-2">
+                        	<div class="form-top">
+                        		<div class="form-top-left">
+                        			<h3><strong>Your Orders</strong></h3>
+                        		</div>
+                            </div>
+                            <div class="form-bottom" id="disease">
+		                    </div>
+                        </div>
+						<div class="col-xs-6 col-md-4" id="item-list">
+							<div class="form-top">
+                        	<div class="form-top-left">
+							<strong>
+                        	<h3><strong>Items</strong></h3>
+							</strong>
+							</div>
+							</div>
+                            <div class="form-bottom" id="disease">
+							<ul id="category-list" class="list-group"></ul>
+		                    </div>
+						</div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Javascript -->
+        <script src="assets/js/jquery-1.11.1.min.js"></script>
+        <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+        <script src="assets/js/jquery.backstretch.min.js"></script>
+        <script src="assets/js/scripts.js"></script>
+        
+        <!--[if lt IE 10]>
+            <script src="assets/js/placeholder.js"></script>
+        <![endif]-->
+		
+		<footer><strong>**Designed for GE Digital Hackathon	   &ensp;&ensp;&ensp;	Powered by Bootstrap**<strong></footer>
+	</body>
+</html>

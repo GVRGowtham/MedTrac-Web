@@ -17,8 +17,8 @@
 		firebase.initializeApp(config);
 		firebase.auth().onAuthStateChanged(function(user) {
 			if (user) {
-				alert("User signed In");
-				window.location.href = 'new.html';
+				alert("Signed In successfully");
+				window.location.href = 'order.html';
 			} else {
 				// No user is signed in.
 			}

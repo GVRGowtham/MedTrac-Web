@@ -19,15 +19,20 @@
 		var welcome="Welcome ";
 		var append="<ul class=\"list-group\">";
 		var uid="";
+		var email="";
+		var items=[];
+		var items_count=[];
 		firebase.auth().onAuthStateChanged(function(user) {
 			if (user) {
 				uid=user.uid;
-				var ref=database.ref('pharmacists/'+user.uid+'/name');
+				email=user.email;
+				var ref=database.ref('patients/'+user.uid+'/name');
 				ref.once('value').then( function(snapshot) {
 					welcome=welcome+snapshot.val();
 					document.getElementById("fixedbutton").innerHTML = welcome;
 				});
-				var ref=database.ref('orders_pharma/'+user.uid+'/');
+				/*
+				var ref=database.ref('orders_patients/'+user.uid+'/');
 				ref.once('value').then( function(snapshot) {
 					snapshot.forEach(function(childSnapshot) {
 						append=append+"<li class=\"list-group-item\" onclick=show('"+childSnapshot.key+"') id=\""+childSnapshot.key+"\">"+childSnapshot.child('name').val()+" - "+childSnapshot.child('email').val()+"<span class=\"badge\">"+childSnapshot.child('count').val()+"</span></li>";
@@ -35,17 +40,46 @@
 					append=append+"</ul>";
 					document.getElementById("disease").innerHTML = append;
 				});
+				*/
 			}
 			else {
 				alert("Redirecting to login page");
-				window.location.href = 'index.html';
+				window.location.href = 'home.html';
 			}
 		});
+		function run(){
+			var select = document.getElementById("disease_list");
+			var options = [];
+			var content="";
+				database.ref('diseases').once('value').then(function (snapshot){
+				snapshot.forEach(function(childSnapshot) {
+					options.push(childSnapshot.key);
+				});
+				for(i in options){
+					content=content+"<option value=\""+options[i]+"\">"+options[i]+"</option>";
+				}
+				select.innerHTML=content;
+				select = document.getElementById("pharmacy_list");
+				options = [];
+				codes = [];
+				content="";
+					database.ref('pharmacists').once('value').then(function (snapshot){
+					snapshot.forEach(function(childSnapshot) {
+						codes.push(childSnapshot.key);
+						options.push(childSnapshot.child('franchise').val());
+					});
+					for(i in options){
+						content=content+"<option value=\""+codes[i]+"\">"+options[i]+"</option>";
+					}
+					select.innerHTML=content;
+				});
+			});
+		}
 		function call(){
 			firebase.auth().signOut().then(function() {
 				// Sign-out successful.
 				alert("Signed out successfully");
-				window.location.href = 'index.html';
+				window.location.href = 'home.html';
 			}).catch(function(error) {
 				// An error happened.
 				var errorCode = error.code;
@@ -53,20 +87,34 @@
 				alert(errorMessage);
 			});
 		}
-		function show(id){
+		function show(){
 			var content="";
-			var ref=database.ref('orders_pharma/'+uid+'/'+id+"/medicine");
-			ref.once('value').then( function(snapshot) {
-					snapshot.forEach(function(childSnapshot) {
-						content=content+"<li class=\"list-group-item\">"+childSnapshot.key+"<span class=\"badge\">"+childSnapshot.val()+"</span></li>";
-					});
-				document.getElementById("category-list").innerHTML=content;
-				var el=document.getElementById(id);
-				var elements = document.getElementsByClassName('active');
-				[].forEach.call(elements, function(e) {
-					e.classList.remove("active");
-				});
-				el.classList.add('active');
+			for(i in items){
+				content=content+"<li class=\"list-group-item\">"+items[i]+"<span class=\"badge\">"+items_count[i]+"</span></li>";
+			}
+			document.getElementById("category-list").innerHTML=content;
+		}
+		function update(){
+			var item=document.order.medname.value;
+			var count=document.order.medcount.value;
+			items.push(item);
+			items_count.push(count);
+			show();
+			return false;
+		}
+		function complete(){
+			var name=document.getElementById("taker_name").value;
+			var dictionary = {};
+			var count=0;
+			for(i in items){
+				dictionary[items[i]]=parseInt(items_count[i]);
+				count=parseInt(count)+parseInt(items_count[i]);
+			}
+			database.ref('return/' + uid).set({
+				email: email,
+				name: name,
+				count: parseInt(count),
+				medicine : dictionary
 			});
 		}
 	</script>
@@ -92,6 +140,14 @@
 		color:white;
 		font-weight:bold;
 		font-size:18px;
+	}
+	#disease_list{
+		color:black;
+		font-size:16px;
+	}
+	#pharmacy_list{
+		color:black;
+		font-size:16px;
 	}
 	#fixedbutton {
 		position: fixed;
@@ -120,8 +176,8 @@
 			</div>
 			<div class="collapse navbar-collapse" id="myNavbar">
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="#"><strong>Home</strong></a></li>
-					<li><a href="return_pharma.html"><strong>Returns</strong></a></li>
+					<li class="active"><a href="#">Home</a></li>
+					<li><a href="return_patient.html">Returns</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li><a href="#"><span class="glyphicon glyphicon-user"></span><strong> Change Password</strong></a></li>
@@ -141,16 +197,27 @@
                         </div>
                     </div>
                     <div class="row">
-						<div class="col-xs-12 col-md-4 col-md-offset-2">
+						<div class="col-xs-6 col-md-4 col-md-offset-2">
                         	<div class="form-top">
                         		<div class="form-top-left">
-                        			<h3><strong>Your Orders</strong></h3>
+                        			<h3><strong>Return medicine</strong></h3>
                         		</div>
                             </div>
                             <div class="form-bottom" id="disease">
+			                    <form name="order" onsubmit="return update()" class="login-form" method="POST">
+			                    	<div class="form-group">
+			                    		<label class="sr-only" for="form-username">Medicine name</label>
+			                        	<input type="text" placeholder="Medicine name..." name="medname" class="form-username form-control" id="form-name">
+			                        </div>
+			                    	<div class="form-group">
+			                    		<label class="sr-only" for="form-username">Medicine count</label>
+			                        	<input type="number" placeholder="Medicine count..." name="medcount" class="form-username form-control" id="form-number">
+			                        </div>
+			                        <button type="submit" class="btn">Add medicine</button><br/><br/>
+			                    </form>
 		                    </div>
                         </div>
-						<div class="col-xs-12 col-md-4" id="item-list">
+						<div class="col-xs-6 col-md-4" id="item-list">
 							<div class="form-top">
                         	<div class="form-top-left">
 							<strong>
@@ -160,6 +227,8 @@
 							</div>
                             <div class="form-bottom" id="disease">
 							<ul id="category-list" class="list-group"></ul>
+							<input type="text" placeholder="Name of the returner" id="taker_name" class="form-username form-control"><br/>
+			                <button type="submit" class="btn" align="center" onclick="complete()">Complete return</button><br/><br/>
 		                    </div>
 						</div>
                     </div>
